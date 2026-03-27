@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scrap Master 3000 UI</title>
+  <style>
+    body { font-family: "Inter", sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 0; }
+    .hero { padding: 48px 24px; max-width: 720px; margin: auto; }
+    h1 { margin: 0 0 12px; font-size: 28px; }
+    p.lead { margin: 0 0 24px; color: #94a3b8; }
+    .card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 24px; box-shadow: 0 16px 60px rgba(0,0,0,0.45); }
+    label { display: block; margin-bottom: 6px; color: #cbd5e1; font-weight: 600; }
+    input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #1f2937; background: #0b1220; color: #e2e8f0; margin-bottom: 16px; }
+    button { width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, #38bdf8, #6366f1); color: #0b1220; font-weight: 700; cursor: pointer; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { margin-top: 16px; font-size: 14px; color: #a5b4fc; min-height: 22px; }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>Scrap Master 3000</h1>
+    <p class="lead">Ingresa una URL, elige el sitio y descarga un bloc de notas con el contenido limpio.</p>
+    <div class="card">
+      <label for="url">URL del post</label>
+      <input id="url" type="url" placeholder="https://..." required />
+
+      <label for="site">Sitio</label>
+      <select id="site">
+        <option value="misteryinternet.com">misteryinternet.com</option>
+        <option value="guatemala.com">guatemala.com</option>
+        <option value="blogger">blogger</option>
+        <option value="blogger_api">blogger_api</option>
+      </select>
+
+      <button id="runBtn">Ejecutar scraping</button>
+      <div class="status" id="status"></div>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('runBtn');
+    const statusEl = document.getElementById('status');
+
+    btn.addEventListener('click', async () => {
+      const url = document.getElementById('url').value.trim();
+      const site = document.getElementById('site').value;
+      if (!url) {
+        statusEl.textContent = 'Ingresa una URL válida.';
+        return;
+      }
+
+      btn.disabled = true;
+      statusEl.textContent = 'Procesando...';
+
+      try {
+        const resp = await fetch('http://localhost:8000/api/scrape', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, site, single: true, format: 'txt' })
+        });
+
+        if (!resp.ok) {
+          const err = await resp.json();
+          throw new Error(err.error || 'Error desconocido');
+        }
+
+        const blob = await resp.blob();
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = 'scrap_output.txt';
+        link.click();
+        statusEl.textContent = 'Bloc de notas descargado.';
+      } catch (e) {
+        statusEl.textContent = `Error: ${e.message}`;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# Virtualenvs
+.venv/
+venv/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+
+# Artifacts
+*.xlsx
+*.txt
+scrap_output.*
+misteryinternet.*
+guatemala_post.*
+blogger_api.*
+
+# IDE
+.idea/
+.vscode/
