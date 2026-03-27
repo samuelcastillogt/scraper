@@ -16,7 +16,20 @@ CLI en Python para extraer contenido de sitios web (scraping etico) y exportar r
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
 pip install -r requirements.txt
-cp .env.example .env  # coloca tu BLOGGER_API_KEY si usaras blogger_api
+cp .env.example .env
+```
+
+Configura variables para Blogger:
+```bash
+export BLOGGER_API_KEY=tu_api_key  # opcional, para lectura API de Blogger
+
+# opcion 1: token directo
+export BLOGGER_ACCESS_TOKEN=tu_access_token_oauth
+
+# opcion 2 (recomendada): refresh automatico de token
+export GOOGLE_CLIENT_ID=tu_client_id
+export GOOGLE_CLIENT_SECRET=tu_client_secret
+export BLOGGER_REFRESH_TOKEN=tu_refresh_token
 ```
 
 ## Uso
@@ -56,13 +69,30 @@ python -m scrap.cli run \
 ```
 
 ## API ligera + Frontend
+- Arranque conjunto (recomendado):
+```bash
+./dev.sh
+```
+
 - Servidor (Flask):
 ```bash
 PYTHONPATH=src flask --app api_server run --port 8000
 ```
 
-- Frontend: abre `frontend/index.html` en el navegador. Ingresa URL y selecciona sitio; descarga un `.txt` (bloc de notas) con el contenido limpio.
-```
+- Frontend: abre `http://localhost:5173` (si usas `./dev.sh`) o `frontend/index.html` directamente en el navegador. Ingresa URL y selecciona sitio; descarga un `.txt` (bloc de notas) con el contenido limpio.
+
+Regla de publicacion en API:
+- `guatemala.com` publica en el blog `7446224671990318703`.
+- `misteryinternet.com` publica en el blog `6453803480920778505`.
+- Los demas sitios mantienen la salida en `.txt`.
+
+Normalizacion de imagenes para `misteryinternet.com`:
+- Si una imagen trae `data-src` y `src` vacio o en placeholder base64 (`data:image/...`), el scraper reemplaza `src` por `data-src` antes de publicar en Blogger.
+
+Prioridad de credenciales para publicar:
+1. Usa `BLOGGER_ACCESS_TOKEN` si existe.
+2. Si no existe, intenta generar un access token usando `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` y `BLOGGER_REFRESH_TOKEN`.
+3. Si faltan ambas opciones, responde error de credenciales.
 
 ## Salida de datos
 Cada fila del `.xlsx` contiene:
@@ -81,3 +111,4 @@ Cada fila del `.xlsx` contiene:
 ## Notas
 - Usa `requests` + `BeautifulSoup` (lxml) y `openpyxl` para la exportacion.
 - La limpieza elimina scripts, estilos, iframes y firmas comunes de anuncios.
+- Para Blogger, la publicacion usa HTML limpio del scraper y conserva `img src` normalizado cuando el origen usa lazy loading.

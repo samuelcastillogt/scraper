@@ -7,6 +7,7 @@ from typing import List
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_file
 
+from scrap.blogger_publisher import BloggerPublisher, resolve_blogger_access_token
 from scrap.base import ScraperRegistry
 from scrap.exporters import TextExporter
 from scrap.cli import build_session
@@ -16,6 +17,12 @@ from scrap.sites.guatemala import GuatemalaScraper
 from scrap.sites.mysteryinternet import MysteryInternetScraper
 
 load_dotenv()
+
+
+BLOG_ID_BY_SITE = {
+    "guatemala.com": "7446224671990318703",
+    "misteryinternet.com": "6453803480920778505",
+}
 
 
 def build_registry() -> ScraperRegistry:
@@ -70,6 +77,54 @@ def scrape_endpoint():
     records = []
     for target in urls:
         records.append(scraper.scrape(target))
+
+    blog_id = BLOG_ID_BY_SITE.get(site)
+    if blog_id:
+        access_token = resolve_blogger_access_token(session=session)
+        if not access_token:
+            return (
+                jsonify(
+                    {
+                        "error": "Missing Blogger credentials. Set BLOGGER_ACCESS_TOKEN or GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET/BLOGGER_REFRESH_TOKEN.",
+                        "site": site,
+                        "blogId": blog_id,
+                    }
+                ),
+                400,
+            )
+
+        try:
+            publisher = BloggerPublisher(access_token=access_token, session=session)
+            published_posts = publisher.publish_records(blog_id=blog_id, records=records)
+        except Exception as exc:
+            return (
+                jsonify(
+                    {
+                        "error": "Failed to publish posts to Blogger",
+                        "detail": str(exc),
+                        "site": site,
+                        "blogId": blog_id,
+                    }
+                ),
+                502,
+            )
+
+        return jsonify(
+            {
+                "status": "published",
+                "site": site,
+                "blogId": blog_id,
+                "count": len(published_posts),
+                "posts": [
+                    {
+                        "id": post.id,
+                        "url": post.url,
+                        "title": post.title,
+                    }
+                    for post in published_posts
+                ],
+            }
+        )
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as tmp:
         exporter = TextExporter(output_path=tmp.name)

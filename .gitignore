@@ -22,6 +22,7 @@ scrap_output.*
 misteryinternet.*
 guatemala_post.*
 blogger_api.*
+!src/scrap/sites/blogger_api.py
 
 # IDE
 .idea/

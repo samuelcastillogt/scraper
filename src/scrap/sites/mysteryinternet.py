@@ -70,6 +70,11 @@ class MysteryInternetScraper(Scraper):
         if container is None:
             cleaned_html, text_content, images = cleaned_html_and_text(html, url)
         else:
+            for img in container.find_all("img"):
+                data_src = img.get("data-src")
+                src = (img.get("src") or "").strip().lower()
+                if data_src and (not src or src.startswith("data:image/")):
+                    img["src"] = data_src
             cleaned_html, text_content, images = cleaned_html_and_text_from_node(container, url)
         return ScrapeRecord(
             url=url,

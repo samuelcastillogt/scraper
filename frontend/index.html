@@ -20,7 +20,7 @@
 <body>
   <div class="hero">
     <h1>Scrap Master 3000</h1>
-    <p class="lead">Ingresa una URL, elige el sitio y descarga un bloc de notas con el contenido limpio.</p>
+    <p class="lead">Ingresa una URL y elige el sitio. Para Guatemala y Mystery se publicara directo en Blogger; para los demas se descarga un .txt.</p>
     <div class="card">
       <label for="url">URL del post</label>
       <input id="url" type="url" placeholder="https://..." required />
@@ -63,6 +63,20 @@
         if (!resp.ok) {
           const err = await resp.json();
           throw new Error(err.error || 'Error desconocido');
+        }
+
+        const contentType = (resp.headers.get('content-type') || '').toLowerCase();
+        if (contentType.includes('application/json')) {
+          const payload = await resp.json();
+          if (payload.status === 'published') {
+            const firstUrl = payload.posts && payload.posts.length ? payload.posts[0].url : '';
+            statusEl.textContent = firstUrl
+              ? `Publicado en Blogger (${payload.count}). Primer post: ${firstUrl}`
+              : `Publicado en Blogger (${payload.count}).`;
+          } else {
+            statusEl.textContent = 'Proceso completado.';
+          }
+          return;
         }
 
         const blob = await resp.blob();
