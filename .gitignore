@@ -18,6 +18,7 @@ Thumbs.db
 # Artifacts
 *.xlsx
 *.txt
+!requirements.txt
 scrap_output.*
 misteryinternet.*
 guatemala_post.*
@@ -27,3 +28,4 @@ blogger_api.*
 # IDE
 .idea/
 .vscode/
+.vercel/

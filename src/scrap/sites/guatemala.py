@@ -21,14 +21,14 @@ class GuatemalaScraper(Scraper):
 
     def discover_urls(self, root_url: str, limit: int | None = None) -> List[str]:
         html = fetch_html(self.session, root_url)
-        soup = BeautifulSoup(html, "lxml")
+        soup = BeautifulSoup(html, "html.parser")
         domain = urlparse(root_url).netloc
         links = collect_links(soup, root_url, domain_filter=domain)
         return links[:limit] if limit else links
 
     def scrape(self, url: str) -> ScrapeRecord:
         html = fetch_html(self.session, url)
-        soup = BeautifulSoup(html, "lxml")
+        soup = BeautifulSoup(html, "html.parser")
         container = soup.select_one(".single_content.read-more")
         title = extract_title(soup)
         if container is None:

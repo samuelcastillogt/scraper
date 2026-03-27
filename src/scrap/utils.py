@@ -72,7 +72,7 @@ def _clean_and_extract(root: Tag, base_url: str) -> tuple[str, str, List[str]]:
 
 
 def cleaned_html_and_text(html: str, base_url: str) -> tuple[str, str, List[str]]:
-    soup = BeautifulSoup(html, "lxml")
+    soup = BeautifulSoup(html, "html.parser")
     root = soup.body or soup
     return _clean_and_extract(root, base_url)
 

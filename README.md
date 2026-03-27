@@ -94,6 +94,28 @@ Prioridad de credenciales para publicar:
 2. Si no existe, intenta generar un access token usando `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` y `BLOGGER_REFRESH_TOKEN`.
 3. Si faltan ambas opciones, responde error de credenciales.
 
+## Deploy en Vercel (GitHub)
+Este repo ya quedo preparado para deploy directo en Vercel:
+- `vercel.json` enruta `/api/*` a `api/index.py` (Flask serverless) y el resto a `frontend/`.
+- `api/index.py` expone la app Flask desde `src/api_server.py`.
+- `requirements.txt` define dependencias para el runtime Python en Vercel.
+
+Pasos:
+1. Sube estos cambios a tu repositorio en GitHub.
+2. En Vercel: **Add New Project** -> selecciona tu repo.
+3. Mantén framework en **Other** (no build command requerido).
+4. Configura variables de entorno en Vercel (Project Settings -> Environment Variables):
+   - `BLOGGER_ACCESS_TOKEN` (opcional si usas refresh)
+   - `GOOGLE_CLIENT_ID`
+   - `GOOGLE_CLIENT_SECRET`
+   - `BLOGGER_REFRESH_TOKEN`
+   - `BLOGGER_API_KEY` (solo si usas `blogger_api`)
+5. Deploy.
+
+Notas de deploy:
+- El frontend usa `/api/scrape` relativo en produccion (misma URL del proyecto Vercel).
+- En local, `frontend/index.html` o `http://localhost:5173` siguen apuntando a `http://localhost:8000`.
+
 ## Salida de datos
 Cada fila del `.xlsx` contiene:
 - `url`
@@ -109,6 +131,6 @@ Cada fila del `.xlsx` contiene:
 3. Registrar la clase en `src/scrap/cli.py` dentro del `ScraperRegistry`.
 
 ## Notas
-- Usa `requests` + `BeautifulSoup` (lxml) y `openpyxl` para la exportacion.
+- Usa `requests` + `BeautifulSoup` y `openpyxl` para la exportacion.
 - La limpieza elimina scripts, estilos, iframes y firmas comunes de anuncios.
 - Para Blogger, la publicacion usa HTML limpio del scraper y conserva `img src` normalizado cuando el origen usa lazy loading.

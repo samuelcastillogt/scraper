@@ -41,6 +41,11 @@
   <script>
     const btn = document.getElementById('runBtn');
     const statusEl = document.getElementById('status');
+    const isLocalFile = window.location.protocol === 'file:';
+    const isLocalStaticServer =
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+      window.location.port === '5173';
+    const apiBase = isLocalFile || isLocalStaticServer ? 'http://localhost:8000' : window.location.origin;
 
     btn.addEventListener('click', async () => {
       const url = document.getElementById('url').value.trim();
@@ -54,7 +59,7 @@
       statusEl.textContent = 'Procesando...';
 
       try {
-        const resp = await fetch('http://localhost:8000/api/scrape', {
+        const resp = await fetch(`${apiBase}/api/scrape`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url, site, single: true, format: 'txt' })
